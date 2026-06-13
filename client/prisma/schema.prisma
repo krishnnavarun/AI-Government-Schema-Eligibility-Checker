@@ -1,6 +1,6 @@
 generator client {
-  provider = "prisma-client"
-  output   = "../src/generated/prisma"
+  provider = "prisma-client-js"
+  output   = "../app/generated/prisma"
 }
 
 datasource db {
@@ -8,54 +8,71 @@ datasource db {
 }
 
 model User {
-  id          String   @id @default(uuid())
+  id               String   @id @default(uuid())
+  name             String
+  email            String   @unique
+  password         String
 
-  name        String
-  email       String   @unique
+  age              Int?
+  gender           String?
+  state            String?
+  district         String?
+  occupation       String?
+  income           Float?
+  education        String?
+  casteCategory    String?
+  isDisability     Boolean  @default(false)
+  isFarmer         Boolean  @default(false)
+  isStudent        Boolean  @default(false)
+  employmentStatus String?
 
-  age         Int?
-  gender      String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 
-  state       String?
-  district    String?
-
-  occupation  String?
-
-  income      Float?
-
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  applications Application[]
+  applications     Application[]
+  savedSchemes     SavedScheme[]
 }
 
 model Scheme {
-  id          String   @id @default(uuid())
+  id                String   @id @default(uuid())
+  name              String
+  description       String
+  benefits          String
+  ministry          String?
+  eligibility       Json     // E.g., { incomeLimit: number, requiredOccupation: string, casteCategory: string[], ageMin: number, ageMax: number }
+  documents         String[]
+  deadline          String?
+  officialUrl       String?
+  stateAvailability String?  @default("All")
 
-  name        String
-  description String
-  benefits    String
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 
-  ministry    String?
-
-  eligibility Json
-
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  applications Application[]
+  applications     Application[]
+  savedBy          SavedScheme[]
 }
 
 model Application {
   id        String   @id @default(uuid())
-
   userId    String
   schemeId  String
+  status    String   @default("PENDING")
 
-  status    String @default("PENDING")
-
-  user      User   @relation(fields: [userId], references: [id])
-  scheme    Scheme @relation(fields: [schemeId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+  scheme    Scheme   @relation(fields: [schemeId], references: [id])
 
   createdAt DateTime @default(now())
 }
+
+model SavedScheme {
+  id        String   @id @default(uuid())
+  userId    String
+  schemeId  String
+
+  user      User     @relation(fields: [userId], references: [id])
+  scheme    Scheme   @relation(fields: [schemeId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@unique([userId, schemeId])
+}
